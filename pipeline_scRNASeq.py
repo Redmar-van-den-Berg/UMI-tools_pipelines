@@ -114,14 +114,14 @@ PARAMS = P.PARAMS
 def downloadGGSE53638(outfile):
     ''' download the sra files '''
 
-    address_base = 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByStudy/sra/SRP%2FSRP034%2FSRP034712'
+    address_base = 'https://sra-pub-run-odp.s3.amazonaws.com/sra'
 
     sra = os.path.basename(outfile).replace(".sra", "")
 
-    statement = '''cd GSE53638;
-    wget %(address_base)s/%(sra)s/%(sra)s.sra'''
+    statement = f'''cd GSE53638;
+    wget {address_base}/{sra}/{sra}'''
 
-    P.run()
+    P.run(statement)
 
 
 @mkdir("GSE53638/fastqs.dir")
@@ -133,7 +133,7 @@ def extractGGSE53638(infile, outfile):
 
     statement = SRA.extract(infile, "GSE53638/fastqs.dir")
 
-    P.run()
+    P.run(statement)
 
 
 @subdivide(extractGGSE53638,
@@ -175,7 +175,7 @@ def indexFastaGSE53638(infile, outfile):
     statement = '''
     bwa index %(infile)s -p %(prefix)s >> %(outfile)s.log 2>&1
     '''
-    P.run()
+    P.run(statement)
 
 
 @mkdir("GSE53638/transcriptome.dir")
@@ -209,7 +209,7 @@ def mapBWAAgainstGenesetGSE53638(infiles, outfile):
                             set_nh=1)
 
     statement = m.build((infile,), outfile)
-    P.run()
+    P.run(statement)
 
 
 @follows(mkdir("GSE53638/dedup_unique.dir"),
@@ -250,7 +250,7 @@ def dedupGSE53638(infile, outfiles):
         samtools index %(outfile)s;
         checkpoint;
         rm -rf %(outfile_tmp)s'''
-        P.run()
+        P.run(statement)
 
 
 @collate([mapBWAAgainstGenesetGSE53638,
@@ -373,13 +373,14 @@ def GSE53638():
 def downloadGSE65525(outfile):
     ''' download SRAs '''
 
-    base = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByStudy/sra/SRP%2FSRP053%2FSRP053052"
+    address_base = 'https://sra-pub-run-odp.s3.amazonaws.com/sra'
 
     sra = P.snip(os.path.basename(outfile), ".sra")
 
-    statement = '''cd GSE65525; wget %(base)s/%(sra)s/%(sra)s.sra'''
+    statement = f'''cd GSE53638;
+    wget {address_base}/{sra}/{sra}'''
 
-    P.run()
+    P.run(statement)
 
 
 @mkdir("GSE65525/fastqs.dir")
@@ -390,7 +391,7 @@ def extractGSE65525(infile, outfile):
     ''' extract fastqs '''
     statement = SRA.extract(infile, "GSE65525/fastqs.dir")
 
-    P.run()
+    P.run(statement)
 
 
 @subdivide(extractGSE65525,
@@ -448,7 +449,7 @@ def processReadsGSE65525(infile, outfile):
 
     statement = m.build((infile,), "GSE65525/processed.dir/trimmed-", track)
 
-    P.run()
+    P.run(statement)
 
 
 @transform(PARAMS['klein_fasta'],
@@ -463,7 +464,7 @@ def indexFastaGSE65525(infile, outfile):
     statement = '''
     bowtie-build %(infile)s %(prefix)s >> %(outfile)s.log 2>&1
     '''
-    P.run()
+    P.run(statement)
 
 
 @follows(mkdir("GSE65525/transcriptome.dir"),
@@ -502,7 +503,7 @@ def mapBowtieAgainstTranscriptomeGSE65525(infiles, outfile):
                                strip_sequence=0)
 
     statement = m.build((infile,), outfile)
-    P.run()
+    P.run(statement)
 
 
 @follows(mkdir("GSE65525/dedup_unique.dir"),
@@ -544,7 +545,7 @@ def dedupGSE65525(infile, outfiles):
                    checkpoint;
                    samtools index %(outfile)s;
                    rm -rf %(outfile_tmp)s'''
-        P.run()
+        P.run(statement)
 
 
 @collate([mapBowtieAgainstTranscriptomeGSE65525,
