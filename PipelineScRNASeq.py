@@ -14,21 +14,20 @@ Code
 '''
 
 import collections
-import CGATPipelines.Pipeline as P
-import CGAT.IOTools as IOTools
-import CGAT.Counts as Counts
+import cgatcore.pipeline as P
+import cgatcore.iotools as IOTools
+import cgatpipelines.tasks.counts as Counts
 import pysam
 import pandas as pd
 import numpy as np
 import glob
 import regex
 import re
-from CGATPipelines.Pipeline import cluster_runnable
+from cgatcore.pipeline import cluster_runnable
 import os
-import CGAT.Fastq as Fastq
+import cgat.Fastq as Fastq
 from rpy2.robjects import r as R
 from rpy2.robjects import pandas2ri
-import pandas.rpy.common as com
 import rpy2.robjects as robjects
 
 
@@ -262,7 +261,7 @@ def mergeAndPlotEditDistances(infiles, outfile, plot_out):
     ''' % locals())
 
     final_df.index = range(0, len(final_df.index), 1)
-    r_df = com.convert_to_r_dataframe(final_df)
+    r_df = pandas2ri.py2ri(final_df)
     plot_edit_distances(r_df)
 
 
@@ -537,8 +536,8 @@ def makeHeatmapsAndPCA(infiles,
         plot_base = os.path.join(os.path.dirname(outfile), "uniq")
         outf.write("%s\n" % plot_base)
 
-        r_uniq_pca_df = com.convert_to_r_dataframe(z_df_pca_filtered)
-        r_uniq_heatmap_df = com.convert_to_r_dataframe(log_df_heatmap_filtered)
+        r_uniq_pca_df = pandas2ri.py2ri(z_df_pca_filtered)
+        r_uniq_heatmap_df = pandas2ri.py2ri(log_df_heatmap_filtered)
 
         log_df_heatmap_filtered.to_csv(outfile+"4", sep="\t", index=True)
         plot_heatmap(r_uniq_heatmap_df, plot_outfile, cluster_table)
@@ -958,7 +957,7 @@ def plotCV(infiles, plotfile, normalise_method):
             "Method": method,
             "mean": tmp_df.table.apply(np.mean, axis=1),
             "cv": tmp_df.table.apply(
-                func=lambda(x): np.std(x)/np.mean(x), axis=1)})
+                func=lambda x: np.std(x)/np.mean(x), axis=1)})
 
         cv_df = pd.concat([cv_df, tmp_cv_df], axis=0)
 
@@ -1184,7 +1183,7 @@ def plotHeatmapGSE65525(infiles,
             counts.removeObservationsPerc(percentile_rowsums=percentile)
             genes = counts.table.index
 
-            top_df = com.convert_to_r_dataframe(counts.table)
+            top_df = pandas2ri.py2ri(counts.table)
 
             plot_outfile = P.snip(outfile, ".log") + "_heatmap_uniq.png"
             plot_table = P.snip(outfile, ".log") + "_dendogram_clusters_uniq.tsv"
@@ -1206,7 +1205,7 @@ def plotHeatmapGSE65525(infiles,
             counts.normalise("total-count")
             df = counts.table
             counts.removeObservationsPerc(percentile_rowsums=percentile)
-            top_df = com.convert_to_r_dataframe(counts.table)
+            top_df = pandas2ri.py2ri(counts.table)
 
             plot_outfile = P.snip(outfile, ".log") + "_heatmap_%s.png" % method
             plot_table = P.snip(outfile, ".log") + "_dendogram_clusters_%s.tsv" % method
@@ -1315,7 +1314,7 @@ def plotPCAGSE65525(infile,
     counts.log()
     # counts.transform(method="vst", design=design, blind=False)
     df = counts.table
-    r_df = com.convert_to_r_dataframe(df)
+    r_df = pandas2ri.ri2py(df)
 
     variance_outfile = P.snip(pca_loadings, "_loadings.tsv") + "_variance.png"
     variance_table = P.snip(pca_loadings, "_loadings.tsv") + "_variance.tsv"
@@ -1379,7 +1378,7 @@ def plotVarianceGSE65525(infiles, outfile, PCs=10):
     ggsave("%(outfile)s", width=12, height=10)
     }''' % locals())
 
-    r_df = com.convert_to_r_dataframe(df)
+    r_df = pandas2ri.ri2py(df)
     plotVariance(r_df)
 
 
@@ -1455,7 +1454,7 @@ def plotVarianceGSE53638(infile, outfile, PCs=10):
     ggsave("%(outfile)s", width=12, height=10)
     }''' % locals())
 
-    r_df = com.convert_to_r_dataframe(df)
+    r_df = pandas2ri.ri2py(df)
     plotVariance(r_df)
 
 
@@ -1463,7 +1462,7 @@ def plotVarianceGSE53638(infile, outfile, PCs=10):
 def plotVectorsVsExpressionGSE53638(infile, outfile, PCs=4):
     ''' Correlate the PC vectors against the total expression '''
 
-    print os.path.join(os.path.dirname(infile), "*_variance.tsv")
+    print(os.path.join(os.path.dirname(infile), "*_variance.tsv"))
     for infile in glob.glob(os.path.join(os.path.dirname(infile), "*_variance.tsv")):
 
         method = P.snip(os.path.basename(infile), "_variance.tsv")
@@ -1471,7 +1470,7 @@ def plotVectorsVsExpressionGSE53638(infile, outfile, PCs=4):
         df = pd.read_table(infile.replace("variance", "eigenvectors"), sep="\t")
         df.to_csv(outfile, sep="\t")
 
-        r_df = com.convert_to_r_dataframe(df)
+        r_df = pandas2ri.ri2py(df)
 
         for ix in range(0, PCs):
 
@@ -1508,7 +1507,7 @@ def plotVectorsVsExpressionGSE53638(infile, outfile, PCs=4):
 
             }''' % locals())
 
-            print plotVectorExpression
+            print(plotVectorExpression)
 
             plotVectorExpression(df)
 
