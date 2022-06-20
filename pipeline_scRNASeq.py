@@ -107,16 +107,17 @@ PARAMS = P.PARAMS
 ###############################################################################
 
 @follows(mkdir("GSE53638"))
-@originate(["GSE53638/SRR1058003.sra",
-            "GSE53638/SRR1058023.sra",
-            "GSE53638/SRR1058032.sra",
-            "GSE53638/SRR1058038.sra"])
+@originate(["GSE53638/SRR1058003",
+            "GSE53638/SRR1058023",
+            "GSE53638/SRR1058032",
+            "GSE53638/SRR1058038"
+            ])
 def downloadGGSE53638(outfile):
     ''' download the sra files '''
 
     address_base = 'https://sra-pub-run-odp.s3.amazonaws.com/sra'
 
-    sra = os.path.basename(outfile).replace(".sra", "")
+    sra = os.path.basename(outfile)
 
     statement = f'''cd GSE53638;
     wget {address_base}/{sra}/{sra}'''
@@ -126,7 +127,7 @@ def downloadGGSE53638(outfile):
 
 @mkdir("GSE53638/fastqs.dir")
 @transform(downloadGGSE53638,
-           regex("GSE53638/(\S+).sra"),
+           regex("GSE53638/(\S+)"),
            r"GSE53638/fastqs.dir/\1_1.fastq.gz")
 def extractGGSE53638(infile, outfile):
     ''' extract the fastqs from the SRA '''
@@ -366,16 +367,16 @@ def GSE53638():
 
 
 @follows(mkdir("GSE65525"))
-@originate(["GSE65525/SRR1784310.sra",
-            "GSE65525/SRR1784313.sra",
-            "GSE65525/SRR1784314.sra",
-            "GSE65525/SRR1784315.sra"])
+@originate(["GSE65525/SRR1784310",
+            "GSE65525/SRR1784313",
+            "GSE65525/SRR1784314",
+            "GSE65525/SRR1784315"
+            ])
 def downloadGSE65525(outfile):
     ''' download SRAs '''
 
     address_base = 'https://sra-pub-run-odp.s3.amazonaws.com/sra'
-
-    sra = P.snip(os.path.basename(outfile), ".sra")
+    sra = os.path.basename(outfile)
 
     statement = f'''cd GSE53638;
     wget {address_base}/{sra}/{sra}'''
@@ -385,7 +386,7 @@ def downloadGSE65525(outfile):
 
 @mkdir("GSE65525/fastqs.dir")
 @transform(downloadGSE65525,
-           regex("GSE65525/(\S+).sra"),
+           regex("GSE65525/(\S+)"),
            r"GSE65525/fastqs.dir/\1_1.fastq.gz")
 def extractGSE65525(infile, outfile):
     ''' extract fastqs '''
